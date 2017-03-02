@@ -257,7 +257,6 @@ void mobilityStateMachine(const ros::TimerEvent&) {
     // Robot is in automode
     if (currentMode == 2 || currentMode == 3) {
 
-        //sendDriveCommand(0.5, 0.1);
 
         // time since timerStartTime was set to current time
         timerTimeElapsed = time(0) - timerStartTime;
@@ -369,8 +368,6 @@ void mobilityStateMachine(const ros::TimerEvent&) {
             //If no targets have been detected, assign a new goal
             else if (!targetDetected && timerTimeElapsed > returnToSearchDelay) {
                 goalLocation = searchController.search(currentLocation);
-
-                
             }
 
             //Purposefully fall through to next case without breaking
@@ -497,10 +494,8 @@ void mobilityStateMachine(const ros::TimerEvent&) {
         }
 
         } /* end of switch() */
-
     }
     // mode is NOT auto
-
     else {
         // publish current state for the operator to see
         stateMachineMsg.data = "WAITING";
@@ -646,24 +641,6 @@ void obstacleHandler(const std_msgs::UInt8::ConstPtr& message) {
 
         avoidingObstacle = true;
     }
-
-    //sammi Feb 27
-    //on its left
-    //turn the that direction 30 degree and go 20cm closer to the potential cubes
-    if(message->data == 11){
-        goalLocation.theta = currentLocation.theta + 30.0/360 * M_PI;
-        goalLocation.x = currentLocation.x + cos(goalLocation.theta) * 0.2;
-        goalLocation.x = currentLocation.x + cos(goalLocation.theta) * 0.2;
-    }else if(message->data == 22){//on its center
-        goalLocation.theta = currentLocation.theta;
-        goalLocation.x = currentLocation.x + cos(goalLocation.theta) * 0.2;
-        goalLocation.x = currentLocation.x + cos(goalLocation.theta) * 0.2;
-    }else{
-        goalLocation.theta = currentLocation.theta - 30.0/360 * M_PI;
-        goalLocation.x = currentLocation.x + cos(goalLocation.theta) * 0.2;
-        goalLocation.x = currentLocation.x + cos(goalLocation.theta) * 0.2;
-    }
-    //sammi end Feb 28
 
     // the front ultrasond is blocked very closely. 0.14m currently
     if (message->data == 4) {

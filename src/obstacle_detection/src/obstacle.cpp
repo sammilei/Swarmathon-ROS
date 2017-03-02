@@ -13,14 +13,19 @@ using namespace std;
 
 //Globals
 double collisionDistance = 0.6; //meters the ultrasonic detectors will flag obstacles
+double collistion_dis_cube_approach = 0.9;//sammi for cube detection
 string publishedName;
 char host[128];
 
 //Publishers
 ros::Publisher obstaclePublish;
 
+//helper function to get the direction of the closest obstable
+int mode(double left, double center, double right);
+
 //Callback handlers
 void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight);
+
 
 int main(int argc, char** argv) {
     gethostname(host, sizeof (host));
@@ -58,18 +63,36 @@ void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_ms
 	
 	if ((sonarLeft->range > collisionDistance) && (sonarCenter->range > collisionDistance) && (sonarRight->range > collisionDistance)) {
 		obstacleMode.data = 0; //no collision
+        //change if less than sonar detection len
+        if ((sonarLeft->range < collistion_dis_cube_approach) || (sonarCenter->range < collistion_dis_cube_approach) || (sonarRight->range < collistion_dis_cube_approach)) {
+            obstacleMode.data = mode(sonarLeft->range, sonarCenter->range, sonarRight->range);
+        }
 	}
 	else if ((sonarLeft->range > collisionDistance) && (sonarRight->range < collisionDistance)) {
 		obstacleMode.data = 1; //collision on right side
 	}
 	else {
 		obstacleMode.data = 2; //collision in front or on left side
-	}
-	if (sonarCenter->range < 0.12) //block in front of center unltrasound.
-	{
-		obstacleMode.data = 4;
+    }
+
+
+
+    if (sonarCenter->range < 0.12) //block in front of center unltrasound.
+    {
+        //        obstacleMode.data += 4;
+        obstacleMode.data = 4;
 	}
 	
         obstaclePublish.publish(obstacleMode);
+}
+
+int mode(double left, double center, double right){
+    int mode = 11;
+    if(left > center){
+        mode = 22;
+    }else if(left > right){
+        mode = 33;
+    }
+    return mode;
 }
 
